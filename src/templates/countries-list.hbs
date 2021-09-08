@@ -1,8 +1,7 @@
+{{#each this}}
 <div class="countries">
-    <h3 class="list-header">Countries:</h3>
     <ul class="list">
-        {{#each countries}}
-        <li class="list-item">Country:{{this.name}}</li>
-        {{/each}}
+        <li class="list-item">{{this.name}}</li>
     </ul>
 </div>
+{{/each}}

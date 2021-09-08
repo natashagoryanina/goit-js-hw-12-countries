@@ -1,9 +1,10 @@
 import countryCardTmpl from '../templates/country-card.hbs';
 import countriesListTmpl from '../templates/countries-list.hbs';
 import API from './fetchCountries';
-//import { debounce } from 'lodash';
-// import { defaults } from '@pnotify/core';
-// defaults.styling = 'material';
+import { error } from '@pnotify/core';
+import '@pnotify/core/dist/PNotify.css';
+import '@pnotify/core/dist/BrightTheme.css';
+const debounce = require('lodash.debounce');
 
 const refs = {
     cardContainer: document.querySelector('.card-container'),
@@ -11,33 +12,33 @@ const refs = {
     input: document.querySelector('#input'),
 }
 
-//refs.input.addEventListener('input', _.debounce(onInputSearch, 500));
-refs.input.addEventListener('input', onInputSearch);
+refs.input.addEventListener('input', debounce(onInputSearch, 500));
 
 function onInputSearch(e) {
-    const input = e.currentTarget;
-    const name = input.value;
+    const name = refs.input.value;
 
     API.fetchCountryByName(name)
         .then(renderCountryCard)
-        .catch(error => console.log(error))
-        // .finally(() => {
-        //     input.reset();
-        // });
+        .catch(error => error({ text: 'Error!' }))
 }
 
 function renderCountryCard(country) {
-    console.log(country);
-    console.log(country.length);
-    if (country.length > 1 && country.length < 10) {
-        let markup = countriesListTmpl(country);
-        refs.listContainer.innerHTML = markup;
+    if (country.length > 10) {
+        error({ text: 'Too many choices. Please, be more specific!' });
+        return;
+    }
+    if (country.length >= 2 && country.length <= 10) {
+        markupMaker(countriesListTmpl, country, refs.listContainer, refs.cardContainer);
         return;
     }
     if (country.length === 1) {
-        let markup = countryCardTmpl(country);
-        refs.cardContainer.innerHTML = markup;
-        refs.listContainer.innerHTML = '';
+        markupMaker(countryCardTmpl, country, refs.cardContainer, refs.listContainer);
         return;
     }
 };
+
+function markupMaker(template, country, htmlItem1, htmlItem2) {
+    let markup = template(country);
+    htmlItem1.innerHTML = markup;
+    htmlItem2.innerHTML = '';
+}
